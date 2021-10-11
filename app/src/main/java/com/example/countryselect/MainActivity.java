@@ -11,6 +11,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.countryselect.data.CountryData;
 import com.example.countryselect.data.CountryDataResponse;
+import com.example.countryselect.data.WeatherData;
 import com.example.countryselect.databinding.ActivityMainBinding;
 import com.example.countryselect.databinding.LayoutBottomSheetCountrySelectBinding;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -112,6 +113,33 @@ public class MainActivity extends AppCompatActivity implements CountrySelectAdap
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(binding.ivCountry);
         binding.tvCountry.setText(countryData.getName());
+
+
+        setWeatherData(countryData.getCode());
+    }
+
+
+    private void setWeatherData(String countryCode){
+        Call<WeatherData> call = service.getWeatherData("https://countrycode.org/api/weather/conditions?country=" + countryCode);
+        call.enqueue(new Callback<WeatherData>() {
+            @Override
+            public void onResponse(Call<WeatherData> call, Response<WeatherData> response) {
+                WeatherData data = response.body();
+                binding.llWeather.mainWeather.setText(data.temp + " " + data.tempUnits );
+                binding.llWeather.conditions.setText(data.conditions);
+                binding.llWeather.secondaryWeather.setText(data.high + "/" + data.low + " " +data.tempUnits );
+                Glide
+                        .with(binding.getRoot().getContext())
+                        .load(data.imageUrl)
+                        .centerCrop()
+                        .into(binding.llWeather.ivImage);
+            }
+
+            @Override
+            public void onFailure(Call<WeatherData> call, Throwable t) {
+
+            }
+        });
     }
 
 
